@@ -3,19 +3,25 @@ Code for Slam project of SJTU Matlab Course.
 
 ---
 
+## Contents
+
+[toc]
+
+---
+
 ## About Entry
 
-#### Feature detect
+### Feature detect
 edit images path and run **testORB.m** to see the results of Feature detect of a giving image.
 
-#### Feature match
+### Feature match
 edit images path and run **trial_2.m** to see the results of Extract and Match Feature Points.
 
-#### Parameter edit
+### Parameter edit
 change the **excepted number of Feature Points** in **para.m**.
 change the **Thresholds of Feature match** in **violent_match.m**.
 
-#### slamtb quick usage
+### slamtb quick usage
 > in matlab prompt
 
 ```matlab
