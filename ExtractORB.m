@@ -6,8 +6,8 @@ function[B,Ps] = ExtractORB(P,n)
 % Long description 
     %% 计算构筑金字塔所需的层数
     [h,w] = size(P);
-    % 金字塔的最小层的尺寸为128*128
-    s = fix(log(min(h,w)/128)/log(1.2));
+    % 金字塔的最小层的尺寸为256*256
+    s = fix(log(min(h,w)/256)/log(1.2));
     nums = ones(1,s);
     for i = 2:s
         nums(i) =  1/(1.44^(i-1));
