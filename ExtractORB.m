@@ -8,6 +8,7 @@ function[B,Ps] = ExtractORB(P,n)
     [h,w] = size(P);
     % 金字塔的最小层的尺寸为256*256
     s = fix(log(min(h,w)/256)/log(1.2));
+    %s=3; %uncomment here to specify the number of layer
     nums = ones(1,s);
     for i = 2:s
         nums(i) =  1/(1.44^(i-1));

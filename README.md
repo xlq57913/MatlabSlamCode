@@ -1,5 +1,5 @@
 # MatlabSlamCode
-Code for Slam project of SJTU_Matlab Course
+Code for Slam project of SJTU Matlab Course.
 
 ---
 
@@ -14,6 +14,31 @@ edit images path and run **trial_2.m** to see the results of Extract and Match F
 #### Parameter edit
 change the **excepted number of Feature Points** in **para.m**.
 change the **Thresholds of Feature match** in **violent_match.m**.
+
+#### slamtb quick usage
+> in matlab prompt
+
+```matlab
+>> cd slamtb-graph/slamtb-ekf % or just double click to enter the folder
+
+>> slamrc       % load parameter
+
+>> slamtb_graph % for slamtb-graph
+
+% or
+
+>> slamtb       % for slamtb-ekf
+```
+
+---
+
+## About SlamToolBox
+
+the slamtb is downloaded from github: [joansola](https://github.com/joansola/slamtb)
+
+> slamtb-graph & slamtb-ekf are two corresponding branches of this repo
+
+---
 
 ## About Ignore
 

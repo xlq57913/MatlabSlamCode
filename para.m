@@ -27,8 +27,9 @@ gray_img2=imresize(gray_img2,[m1,n1]);
 %合并图像
 gray_img=[gray_img1,gray_img2];
 % 提取特征点和描述子
-[B1,F1]=ExtractORB(gray_img(:,1:n1),1000);
-[B2,F2]=ExtractORB(gray_img(:,n1+1:end),1000);
+[B1,F1]=ExtractORB(gray_img1,1000);
+[B2,F2]=ExtractORB(gray_img2,1000);
+fprintf('After ExtractORB : %0.5f \n',toc)
 % 第二张图片由于与第一章图片合并，
 % % 横坐标右移n1个单位
 F2(:,2)=F2(:,2)+n1;
@@ -52,6 +53,7 @@ for i=1:length(matchpoint)
         F2(matchpoint(i),1)];
     j=j+1;
 end
+fprintf('After match : %0.5f \n',toc)
 A=A(1:j-1,:);
 A1=A;
 A1(:,2)=A1(:,2)-n1;
