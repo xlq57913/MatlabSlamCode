@@ -38,6 +38,13 @@ change the **Thresholds of Feature match** in **violent_match.m**.
 
 ---
 
+## About TODO
+- [ ] 视觉里程计
+- [ ] 利用slamtb搭建地图
+- [ ] 卡尔曼滤波
+- [ ] 非线性优化
+- [ ] 特征点匹配算法优化
+
 ## About SlamToolBox
 
 the slamtb is downloaded from github: [joansola](https://github.com/joansola/slamtb)
