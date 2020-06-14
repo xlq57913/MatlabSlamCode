@@ -11,13 +11,15 @@ Code for Slam project of SJTU Matlab Course.
 
 ## About Entry
 
+> Feature matching codes are in **Odometry/FeatureMatch**
+
 ### Feature detect
 edit images path and run **testORB.m** to see the results of Feature detect of a giving image.
 
 ### Feature match
 edit images path and run **trial_2.m** to see the results of Extract and Match Feature Points.
 
-### Parameter edit
+#### Parameter edit
 change the **excepted number of Feature Points** in **para.m**.
 change the **Thresholds of Feature match** in **violent_match.m**.
 
@@ -39,7 +41,7 @@ change the **Thresholds of Feature match** in **violent_match.m**.
 ---
 
 ## About TODO
-- [ ] 视觉里程计
+- [x] 视觉里程计
 - [ ] 利用slamtb搭建地图
 - [ ] 卡尔曼滤波
 - [ ] 非线性优化
@@ -55,4 +57,4 @@ the slamtb is downloaded from github: [joansola](https://github.com/joansola/sla
 
 ## About Ignore
 
-.mat, .fig files are ignored, everything in figure folder are ignored, place images as you want.
+To avoid unnecessary files in this repo, .mat files and all images are ignored, everything in figure folder are ignored, place images as you want.

@@ -9,6 +9,12 @@ d=zeros(m1,m2);
 % hamming distance
 for i=1:m1
     for j=1:m2
-        d(i,j) = sum(abs(B1(i,:)-B2(j,:)));
+        count=0;
+        for k=1:n
+            if(B1(i,k)~=B2(j,k))
+                count=count+1;
+            end
+        end
+        d(i,j)=count;
     end
 end

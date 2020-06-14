@@ -1,3 +1,8 @@
 *.mat
 *.fig
+*.jpg
+*.png
+*.jpeg
 figure/*
+Odometry/LeftCamera
+Odometry/RightCamera

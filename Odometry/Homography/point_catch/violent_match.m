@@ -13,7 +13,7 @@ t=min(t);
 k=zeros(n,1);
 for i=1:n
     [dist,b]=min(d(i,:));
-    if dist<2*t
+    if dist<6*t
         k(i)=b;
     else
         k(i)=-1;

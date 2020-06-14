@@ -6,9 +6,8 @@ function[B,Ps] = ExtractORB(P,n)
 % Long description 
     %% 计算构筑金字塔所需的层数
     [h,w] = size(P);
-    % 金字塔的最小层的尺寸为256*256
-    s = fix(log(min(h,w)/256)/log(1.2));
-    %s=3; %uncomment here to specify the number of layer
+    % 金字塔的最小层的尺寸为128*128
+    s = fix(log(min(h,w)/128)/log(1.2));
     nums = ones(1,s);
     for i = 2:s
         nums(i) =  1/(1.44^(i-1));
@@ -17,7 +16,7 @@ function[B,Ps] = ExtractORB(P,n)
     nums = fix(n/sum(nums)*nums);
     nums(1) = n - sum(nums(2:end));
     Ps = zeros(n,2);
-    B = zeros(n,256);
+    B = dec2bin(zeros(n,1),256);
     lastl = 0;
     %% 对每层图片生成Fast角点和Brief描述子
     for j = 1:s
@@ -39,7 +38,7 @@ function[B,Ps] = ExtractORB(P,n)
             D = GetDescriber(Fs(i,3));
             for a = 1:256
                 if(rP(Fs(i,1)+D(1,a),Fs(i,2)+D(2,a))>rP(Fs(i,1)+D(3,a),Fs(i,2)+D(4,a)))
-                    B(i+lastl,a) = 1;
+                    B(i+lastl,a) = '1';
                 end
             end
         end
