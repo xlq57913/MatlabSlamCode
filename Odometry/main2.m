@@ -13,7 +13,7 @@ load('camera.mat');     %读取相机参数
 Right='RightCamera';    %数据集储存点
 Left='LeftCamera';
 %% loop
-for picnum=1:40      %读取数据，逐帧处理
+for picnum=1:140      %读取数据，逐帧处理
 %% feature matching
     [Image1_l,Image1_r,Image2_l,Image2_r] = ReadPic(picnum,Left,Right);
     [m1_l,m2_l,m1_r,m2_r]=Featurematch_1(Image1_l, Image2_l, Image1_r, Image2_r);

@@ -17,29 +17,25 @@ Left='LeftCamera';
 
 
 
-for picnum=1:20      %读取数据，逐帧处理
+for picnum=1:140      %读取数据，逐帧处理
 %% feature matching
     [Image1_l,Image1_r,Image2_l,Image2_r] = ReadPicture(picnum);
     [m1_l,m2_l,m1_r,m2_r]=FeatureMatch(Image1_l,Image1_r,Image2_l,Image2_r);
-    num_1 = min(length(m1_l),length(m1_r))
-    num_2 = min(length(m2_l),length(m2_r))
-    Point1_L = m1_l(1:num_1,:);
-    Point1_R = m1_r(1:num_1,:);
-    Point2_L = m2_l(1:num_2,:);
-    Point2_R = m2_r(1:num_2,:);
+    [num,~]=size(m1_l)
+    Point1_L = m1_l;
+    Point1_R = m1_r;
+    Point2_L = m2_l;
+    Point2_R = m2_r;
     % [m1_l,m2_l,m1_r,m2_r]=Featurematch_1(Image1_l, Image2_l, Image1_r, Image2_r);
-    % Point1_LT=((m1_l.Location));
-    % Point1_RT=((m1_r.Location));
-    % Point2_LT=((m2_l.Location));
-    % Point2_RT=((m2_r.Location));
-%     Point1_L=((Point1_L.Location));
-%     Point1_R=((Point1_R.Location));
-%     Point2_L=((Point2_L.Location));
-%     Point2_R=((Point2_R.Location));
+    % Point1_L=((m1_l.Location));
+    % Point1_R=((m1_r.Location));
+    % Point2_L=((m2_l.Location));
+    % Point2_R=((m2_r.Location));
+    % Point1_L=((Point1_L.Location));
+    % Point1_R=((Point1_R.Location));
+    % Point2_L=((Point2_L.Location));
+    % Point2_R=((Point2_R.Location));
     fprintf('%d has finished.\n',picnum);  
-    if(num_1==0 || num_2==0)
-        continue;
-    end
  %% calculate 3D coordinate
     Point3ddepth_1 = triangulate(Point1_L, Point1_R, P_L',P_R')*1000;     
     Point3ddepth_2 = triangulate(Point2_L, Point2_R, P_L',P_R')*1000;
@@ -72,17 +68,20 @@ end
 
 
 % trajectory
-% for i=1:(length(Rt))
-%     if norm(Rt(i).t)>=2000
-%         Rt(i).t=Rt(i).t/norm(Rt(i).t)*1300;
-%     end
-% end
+for i=1:(length(Rt))
+    if norm(Rt(i).t)>=2000
+        Rt(i).t=Rt(i).t/norm(Rt(i).t)*1300;
+    end
+end
 
 [Ptrajectory,Z]=trajectory(Rt);     %计算轨迹
 mileage=zeros(1,length(Rt));
 for i=1:(length(Ptrajectory)-1)
     mileage(:,i)=norm(Ptrajectory(:,i)-Ptrajectory(:,i+1));
 end
+
+Ptrajectory(2,:)=[];                %去除y轴数据
+Z(2,:)=[];
 
 %% 画图
 hold on;

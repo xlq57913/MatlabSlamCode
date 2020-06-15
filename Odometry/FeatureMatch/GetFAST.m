@@ -37,6 +37,9 @@ function F = GetFAST(P,N)
             ls = [P(i,j+3),P(i+1,j+3),P(i+2,j+2),P(i+3,j+1),P(i+3,j),P(i+3,j-1),P(i+2,j-2),P(i+1,j-3),P(i,j-3),P(i-1,j-3),P(i-2,j-2),P(i-3,j-1),P(i-3,j),P(i-3,j+1),P(i-2,j+2),P(i-1,j+3)];
             % �?测Fast角点
             if(CheckFAST(ls-P(i,j),T))
+                if(min(abs(i-F(:,2))+abs(j-F(:,3)))<5)
+                    continue;
+                end
                 %% 计算Harris响应
                 A = sum(Ixx(i-1:i+1,j-1:j+1),'all');
                 B = sum(Iyy(i-1:i+1,j-1:j+1),'all');
@@ -76,5 +79,5 @@ function F = GetFAST(P,N)
     else
         F = F(:,2:4);
     end
-    F = sortrows(F,[1,2],'descend');
+    % F = sortrows(F,[1,2],'descend');
 end
