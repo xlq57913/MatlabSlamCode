@@ -1,4 +1,4 @@
-function [k1,k2,k3,kd]=violent_matchFor4(d1,d2,d3)
+function k=violent_matchFor4(d1,d2,d3)
     [n,~]=size(d1);
     t=max([min(min(d1)),min(min(d2)),min(min(d3))]);
     if(t==0)
@@ -9,7 +9,7 @@ function [k1,k2,k3,kd]=violent_matchFor4(d1,d2,d3)
     else
         t = 6*t;
     end
-    k = -1*ones(n,4);
+    k = -1*ones(n,5);
     for i=1:n
         dist1=max(min(d1(i,:)),min(d2(i,:)));
         if dist1<t
@@ -21,11 +21,10 @@ function [k1,k2,k3,kd]=violent_matchFor4(d1,d2,d3)
                 k(i,2)=b2;
                 k(i,3)=b3;
                 k(i,4)=max(dist1,dist2);
+                k(i,5)=i;
             end
         end
     end
-    k1 = k(:,1);
-    k2 = k(:,2);
-    k3 = k(:,3);
-    kd = k(:,4);
+
+    k = sortrows(k,4);
     

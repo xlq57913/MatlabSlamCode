@@ -28,7 +28,13 @@ dham_1=hamming(B1_l,B1_r);
 
 % 暴力匹配结果
 % [matchpoint_l,matchpoint_1]=violent_matchFor3(dham_l,dham_1);
-[matchpoint_l,matchpoint_1,matchpoint_r,match_d]=violent_matchFor4(dham_l,dham_1,dham_r);
+matchpoints = violent_matchFor4(dham_l,dham_1,dham_r);
+% [matchpoint_l,matchpoint_1,matchpoint_r,match_d]=violent_matchFor4(dham_l,dham_1,dham_r);
+for i = 1:3
+    [~,ia,~] = unique(matchpoints(:,i));
+    matchpoints = matchpoints(ia,:);
+end
+
 % [matchpoint_r]=getMatchPoint(matchpoint_1,dham_r);
 % matchpoint_r=violent_match(dham_r);
 % matchpoint_1=violent_match(dham_1);
@@ -41,20 +47,41 @@ dham_1=hamming(B1_l,B1_r);
 % m1_r=[A_r(:,1),A_r(:,3)];
 % m2_r=[A_r(:,2),A_r(:,4)];
 
-n = length(matchpoint_1);
+
+
+[n,~] = size(matchpoints);
 A=zeros(n,9);
-j=1;
+j=0;
 for i=1:n
-    if(matchpoint_1(i)==-1)
+    if(matchpoints(i,1)==-1)
         continue;
     end
-    A(j,:)=[F1_l(i,2),F1_l(i,1),F2_l(matchpoint_l(i),2),F2_l(matchpoint_l(i),1),F1_r(matchpoint_1(i),2),F1_r(matchpoint_1(i),1),F2_r(matchpoint_r(i),2),F2_r(matchpoint_r(i),1),match_d(i)];
     j=j+1;
+    origin = matchpoints(i,5);
+    A(j,:)=[F1_l(origin,2),F1_l(origin,1),F2_l(matchpoints(i,1),2),F2_l(matchpoints(i,1),1),F1_r(matchpoints(i,2),2),F1_r(matchpoints(i,2),1),F2_r(matchpoints(i,3),2),F2_r(matchpoints(i,3),1),matchpoints(i,4)];
 end
-A=A(1:j-1,:);
-A = sortrows(A,9);
-if(j>100)
-    A = A(1:100,:);
+
+A = A(1:j,:);
+
+Err = [abs(A(:,1)-A(:,3))+abs(A(:,2)-A(:,4)) abs(A(:,1)-A(:,5))+abs(A(:,2)-A(:,6)) abs(A(:,1)-A(:,7))+abs(A(:,2)-A(:,8))];
+avgDis1 = sum(Err)/j * 1.3;
+
+discrad = 0;
+for i = 1:j
+    if(i==j-discrad)
+        break;
+    end
+    if(Err(i,1)>avgDis1(1) || Err(i,2)>avgDis1(2) || Err(i,3)>avgDis1(3))
+        A(i-discrad,:) = [];
+        discrad = discrad+1;
+    end
+end
+
+j = j-discrad;
+
+if(j>45)
+    A = sortrows(A,9);
+    A = A(1:45,:);
 end
 
 m1_l=A(:,1:2);
@@ -62,7 +89,3 @@ m2_l=A(:,3:4);
 m1_r=A(:,5:6);
 m2_r=A(:,7:8);
 
-% m1_l=A(:,2:-1:1);
-% m2_l=A(:,4:-1:3);
-% m1_r=A(:,6:-1:5);
-% m2_r=A(:,8:-1:7);

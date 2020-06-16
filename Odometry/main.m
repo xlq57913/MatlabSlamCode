@@ -26,6 +26,9 @@ for picnum=1:140      %读取数据，逐帧处理
     Point1_R = m1_r;
     Point2_L = m2_l;
     Point2_R = m2_r;
+    % fprintf('avg distance from 1L to 1R %0.3f \n',sum(abs(Point1_L-Point1_R),'all')/num);
+    % fprintf('avg distance from 1L to 2L %0.3f \n',sum(abs(Point1_L-Point2_L),'all')/num);
+    % fprintf('avg distance from 1L to 2R %0.3f \n',sum(abs(Point1_L-Point2_R),'all')/num);
     % [m1_l,m2_l,m1_r,m2_r]=Featurematch_1(Image1_l, Image2_l, Image1_r, Image2_r);
     % Point1_L=((m1_l.Location));
     % Point1_R=((m1_r.Location));
@@ -36,7 +39,7 @@ for picnum=1:140      %读取数据，逐帧处理
     % Point2_L=((Point2_L.Location));
     % Point2_R=((Point2_R.Location));
     fprintf('%d has finished.\n',picnum);  
- %% calculate 3D coordinate
+%% calculate 3D coordinate
     Point3ddepth_1 = triangulate(Point1_L, Point1_R, P_L',P_R')*1000;     
     Point3ddepth_2 = triangulate(Point2_L, Point2_R, P_L',P_R')*1000;
 %  %% data selection
@@ -61,6 +64,7 @@ for picnum=1:140      %读取数据，逐帧处理
     Point2_2D_hom = [Point2_L,ones(length(Point2_L),1)];
 %% pnp问题 -EPnP算法
     [R1,t1,Point2_3D_epnp,~] = efficient_pnp_gauss(Point1_3D_hom, Point2_2D_hom,P_L(1:3,1:3));
+    % [R1,t1,Point2_3D_epnp,~] = efficient_pnp(Point1_3D_hom, Point2_2D_hom,P_L(1:3,1:3));
     [R0,t0]=ICP(Point3ddepth_1,Point2_3D_epnp);
     Rt(picnum).R=R0;
     Rt(picnum).t=t0;
