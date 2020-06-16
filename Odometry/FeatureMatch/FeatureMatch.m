@@ -79,9 +79,9 @@ end
 
 j = j-discrad;
 
-if(j>45)
+if(j>50)
     A = sortrows(A,9);
-    A = A(1:45,:);
+    A = A(1:50,:);
 end
 
 m1_l=A(:,1:2);
