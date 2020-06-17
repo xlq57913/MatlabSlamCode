@@ -15,10 +15,10 @@ end
 % [gray_img1_r,gray_img2_r]=grayimg(img1_r,img2_r);
 
 % 提取特征点和描述子
-[B1_l,F1_l]=ExtractORB(gray_img1_l,1000);
-[B2_l,F2_l]=ExtractORB(gray_img2_l,1000);
-[B1_r,F1_r]=ExtractORB(gray_img1_r,1000);
-[B2_r,F2_r]=ExtractORB(gray_img2_r,1000);
+[B1_l,F1_l]=ExtractORB(gray_img1_l,1250);
+[B2_l,F2_l]=ExtractORB(gray_img2_l,1250);
+[B1_r,F1_r]=ExtractORB(gray_img1_r,1250);
+[B2_r,F2_r]=ExtractORB(gray_img2_r,1250);
 
 % 描述子汉明距离
 dham_l=hamming(B1_l,B2_l);
@@ -79,9 +79,9 @@ end
 
 j = j-discrad;
 
-if(j>50)
+if(j>45)
     A = sortrows(A,9);
-    A = A(1:50,:);
+    A = A(1:45,:);
 end
 
 m1_l=A(:,1:2);

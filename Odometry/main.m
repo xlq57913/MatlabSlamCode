@@ -8,9 +8,11 @@ addpath(genpath('code_epnp'));
 addpath(genpath('CVLib_Featurematch'));
 addpath('FeatureMatch')
 addpath('featureMatching');
+addpath('KalmanFilter');
 
 %% 加载相机参数
 load('camera.mat'); 
+load('timestamps.mat');
 
 Right='RightCamera';    %数据集储存点
 Left='LeftCamera';
