@@ -10,37 +10,33 @@ addpath('FeatureMatch')
 addpath('featureMatching');
 addpath('KalmanFilter');
 
+%% number of dataset
+datanum = 1;
+
 %% 加载相机参数
-load('camera.mat'); 
+if(datanum==1)
+    load('camera.mat');
+else
+    load('camera_1L.mat')
+    load('camera_1R.mat')
+end
 load('timestamps.mat');
 
-Right='RightCamera';    %数据集储存点
-Left='LeftCamera';
+% global landmarks;
+landmarks = containers.Map;
 
-
+Odometry = zeros(3,1);
 
 for picnum=1:140      %读取数据，逐帧处理
 %% feature matching
-    [Image1_l,Image1_r,Image2_l,Image2_r] = ReadPicture(picnum);
+    [Image1_l,Image1_r,Image2_l,Image2_r] = ReadPicture(picnum,datanum);
     [m1_l,m2_l,m1_r,m2_r]=FeatureMatch(Image1_l,Image1_r,Image2_l,Image2_r);
     [num,~]=size(m1_l)
     Point1_L = m1_l;
     Point1_R = m1_r;
     Point2_L = m2_l;
     Point2_R = m2_r;
-    % fprintf('avg distance from 1L to 1R %0.3f \n',sum(abs(Point1_L-Point1_R),'all')/num);
-    % fprintf('avg distance from 1L to 2L %0.3f \n',sum(abs(Point1_L-Point2_L),'all')/num);
-    % fprintf('avg distance from 1L to 2R %0.3f \n',sum(abs(Point1_L-Point2_R),'all')/num);
-    % [m1_l,m2_l,m1_r,m2_r]=Featurematch_1(Image1_l, Image2_l, Image1_r, Image2_r);
-    % Point1_L=((m1_l.Location));
-    % Point1_R=((m1_r.Location));
-    % Point2_L=((m2_l.Location));
-    % Point2_R=((m2_r.Location));
-    % Point1_L=((Point1_L.Location));
-    % Point1_R=((Point1_R.Location));
-    % Point2_L=((Point2_L.Location));
-    % Point2_R=((Point2_R.Location));
-    fprintf('%d has finished.\n',picnum);  
+
 %% calculate 3D coordinate
     Point3ddepth_1 = triangulate(Point1_L, Point1_R, P_L',P_R')*1000;     
     Point3ddepth_2 = triangulate(Point2_L, Point2_R, P_L',P_R')*1000;
@@ -68,45 +64,101 @@ for picnum=1:140      %读取数据，逐帧处理
     [R1,t1,Point2_3D_epnp,~] = efficient_pnp_gauss(Point1_3D_hom, Point2_2D_hom,P_L(1:3,1:3));
     % [R1,t1,Point2_3D_epnp,~] = efficient_pnp(Point1_3D_hom, Point2_2D_hom,P_L(1:3,1:3));
     [R0,t0]=ICP(Point3ddepth_1,Point2_3D_epnp);
-    Rt(picnum).R=R0;
-    Rt(picnum).t=t0;
+    Rt.R=R0;
+    Rt.t=t0;
+    if norm(Rt.t)>=2000
+        Rt.t=Rt.t/norm(Rt.t)*1300;
+    end
+
+    %% update Odometry
+    % Odometry(:,picnum+1) = updateOdometry(Rt,Odometry,picnum);
+    Odometry(:,picnum+1) = Rt.R*Odometry(:,picnum)+Rt.t;
+
+    %% get 3D coordinate of feature points
+    GlobalPoint = (Point3ddepth_1+Point3ddepth_2)/2;
+    GlobalPoint(:,1:2) = transpose((GlobalPoint(:,1:2)') + Odometry([1,3],picnum+1));
+
+    %% update landmarks
+    lmk = makeLandMark(GlobalPoint,landmarks);
+    if(~isempty(lmk))
+        vP = lmk(3:4,:) - lmk(1:2,:);
+        [~,n] = size(vP);
+        Odometry([1,3],picnum+1) = Odometry([1,3],picnum+1) + sum(vP')'/n;
+    end
+    
+    % [xV,q,r] = EFK2(vP,Odometry,picnum);
+
+    fprintf('%d has finished.\n',picnum);  
 end
 
 
 % trajectory
-for i=1:(length(Rt))
-    if norm(Rt(i).t)>=2000
-        Rt(i).t=Rt(i).t/norm(Rt(i).t)*1300;
+% for i=1:(length(Rt))
+%     if norm(Rt(i).t)>=2000
+%         Rt(i).t=Rt(i).t/norm(Rt(i).t)*1300;
+%     end
+% end
+
+% [Odometry,Z]=trajectory(Rt);     %计算轨迹
+mileage=zeros(1,length(Rt));
+for i=1:(length(Odometry)-1)
+    mileage(:,i)=norm(Odometry(:,i)-Odometry(:,i+1));
+end
+
+Odometry(2,:)=[];                %去除y轴数据
+%Z(2,:)=[];
+
+Mapkeys = keys(landmarks);
+m = length(Mapkeys);
+landmarkPoints = zeros(2,m);
+landmarkNum = 0;
+for i = 1:m
+    key = cell2mat(Mapkeys(i));
+    landmark = landmarks(key);
+    if(landmark.count>3)
+        landmarkNum = landmarkNum+1;
+        landmarkPoints(:,landmarkNum) = landmark.point(1:2)';
     end
 end
+landmarkPoints = landmarkPoints(:,1:landmarkNum);
 
-[Ptrajectory,Z]=trajectory(Rt);     %计算轨迹
-mileage=zeros(1,length(Rt));
-for i=1:(length(Ptrajectory)-1)
-    mileage(:,i)=norm(Ptrajectory(:,i)-Ptrajectory(:,i+1));
+%% show GPS_trajectory
+if(datanum == 1)
+    load('t_true.mat');
+    P_true = [Odometry(2,:);Odometry(1,:)];
+    L_true = [landmarkPoints(2,:);landmarkPoints(1,:)];
+elseif(datanum == 2)
+    load('t1_true.mat');
+    load('R1_correct.mat')
+    P_true = R1_correct*[Odometry(2,:);Odometry(1,:)];
+    L_true = R1_correct*[landmarkPoints(2,:);landmarkPoints(1,:)];
+else
+    load('t2_true.mat');
+    load('R2_correct.mat')
+    P_true = R2_correct*[Odometry(2,:);Odometry(1,:)];
+    L_true = R2_correct*[landmarkPoints(2,:);landmarkPoints(1,:)];
 end
 
-Ptrajectory(2,:)=[];                %去除y轴数据
-Z(2,:)=[];
 
 %% 画图
 hold on;
-plot(Ptrajectory(1,:),Ptrajectory(2,:),'o-')
+plot(P_true(2,:),P_true(1,:),'o-')
+plot(L_true(2,:),L_true(1,:),'x')
 % plot(Z(1,:),Z(2,:),'o-');
 % h1=plot(Ptrajectory(1,:),Ptrajectory(2,:));
 % plot(Z(1,:),Z(2,:),'bo');
 % for i=1:length(Z)
 %     plot([Ptrajectory(1,i) Z(1,i)],[Ptrajectory(2,i) Z(2,i)],'r');      %绘制相机姿态
 % end
-hold off;
+% hold off;
 title('trajectory');
 xlabel('x(mm)');
 ylabel('z(mm)');
 total_m=sum(mileage)                %显示里程
 hold on;
 
-%% show GPS_trajectory
-load('t_true.mat');
+
+
 h2=plot(t_true(2,:),t_true(1,:),'r','linewidth',2);
 hold off;
-legend('视觉里程计恢复图像','GPS数据');
+legend('视觉里程计恢复图像','GPS数据')

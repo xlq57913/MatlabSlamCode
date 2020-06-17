@@ -1,4 +1,4 @@
-function [xV,zV] = EKF(vs,ts)
+function [xV,q,r] = EFK2(vP,Odometry,picnum);
     N = length(vs);
     n = 6;
     q = 0.2;
@@ -43,6 +43,4 @@ function [xV,zV] = EKF(vs,ts)
 
         xV(:,k) = x;
     end
-
 end
-
