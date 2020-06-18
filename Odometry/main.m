@@ -10,26 +10,35 @@ addpath('FeatureMatch')
 addpath('featureMatching');
 addpath('KalmanFilter');
 
-%% number of dataset
-datanum = 1;
+% number of dataset
+datanum = 2;
+
+% number of image to read
+framenum = 440;
 
 %% 加载相机参数
 if(datanum==1)
     load('camera.mat');
+    load('t_true.mat');
 else
-    load('camera_1L.mat')
-    load('camera_1R.mat')
+    load('camera_1L.mat');
+    load('camera_1R.mat');
+    if(datanum==2)
+        load('t2_true.mat');
+        load('R2_correct.mat')
+    else
+        load('t1_true.mat');
+        load('R1_correct.mat')
+    end
 end
 load('timestamps.mat');
 
 % global landmarks;
 landmarks = containers.Map;
 
-% number of image to read
-framenum = 50;
-
 Odometry = zeros(3,framenum+1);
 trajectory = zeros(3,framenum+1);
+loss = zeros(2,framenum+1);
 
 for picnum=1:framenum      %读取数据，逐帧处理
 %% feature matching
@@ -67,23 +76,6 @@ for picnum=1:framenum      %读取数据，逐帧处理
     
     num = num-discrad
 
-%  %% data selection
-%     length=length(Point1_L);
-%     Point1_L(fix(length/3)*3+1:end,:)=[];
-%     Point1_R(fix(length/3)*3+1:end,:)=[];
-%     Point2_L(fix(length/3)*3+1:end,:)=[];
-%     Point2_R(fix(length/3)*3+1:end,:)=[];
-%     Point3ddepth_1(fix(length/3)*3+1:end,:)=[];
-%     Point3ddepth_2(fix(length/3)*3+1:end,:)=[];
-%     clear length;
-
-% %% P3P 2D-3D
-%     [Point3dP3P_2,Point3ddepth_1]=P3P(Point2_L,Point3ddepth_1,P_L);
-% %% ICP 3D--Rt
-%     [R0,t0]=ICP(Point3ddepth_1,Point3dP3P_2);
-%     Rt(picnum).R=R0;
-%     Rt(picnum).t=t0;
-
 %% 齐次化
     Point1_3D_hom = [Point3ddepth_1,ones(length(Point3ddepth_1),1)];
     Point2_2D_hom = [Point2_L,ones(length(Point2_L),1)];
@@ -106,38 +98,36 @@ for picnum=1:framenum      %读取数据，逐帧处理
     GlobalPoint(:,1:2) = transpose((GlobalPoint(:,1:2)') + Odometry([1,3],picnum+1));
 
     %% update landmarks
-    lmk = makeLandMark(GlobalPoint,landmarks);
-    if(~isempty(lmk))
-        vP = lmk(3:4,:) - lmk(1:2,:);
-        [~,n] = size(vP);
-
-        % ugly wey
-        if(n~=1)
-            offset = sum(vP')'/n
-        else
-            offset = vP
-        end
-        % if(norm(offset)>norm(Odometry([1,3],picnum+1)-Odometry([1,3],picnum))*0.3)
-        %     offset = offset / norm(offset) * norm(Odometry([1,3],picnum+1)-Odometry([1,3],picnum))*0.3;
-        % end
-        Odometry([1,3],picnum+1) = Odometry([1,3],picnum+1) + offset;
-
-        %elegant way
-        % [xV,q,r] = EFK2(vP,Odometry,picnum);
-    end
-    
-    
+%     lmk = makeLandMark(GlobalPoint,landmarks);
+%     if(~isempty(lmk))
+%         vP = lmk(3:4,:) - lmk(1:2,:);
+%         [~,n] = size(vP)
+% 
+%         % ugly wey
+%         if(n~=1)
+%             offset = sum(vP')'/n
+%         else
+%             offset = vP
+%         end
+%         if(abs(offset(1))>norm(Odometry([1,3],picnum+1)-Odometry([1,3],picnum))*0.3)
+%             offset = offset / norm(offset) * norm(Odometry([1,3],picnum+1)-Odometry([1,3],picnum))*0.3;
+%         end
+%         Odometry([1,3],picnum+1) = Odometry([1,3],picnum+1) + offset;
+% 
+%         %elegant way
+%         % [xV,q,r] = EFK2(vP,Odometry,picnum);
+%     end
 
     fprintf('%d has finished.\n',picnum);  
+    if(datanum==1)
+        loss(:,picnum+1) = t_true([2,1],picnum+1)-Odometry([1,3],picnum+1);
+    elseif(datanum==2)
+        loss([2,1],picnum+1) = t_true([1,2],picnum+1)-R2_correct*[Odometry([3,1],picnum+1)];
+    else 
+        loss([2,1],picnum+1) = t_true([1,2],picnum+1)-R1_correct*[Odometry([3,1],picnum+1)];
+    end
+    fprintf('loss : %d \n', norm(loss(:,picnum+1)));
 end
-
-
-% trajectory
-% for i=1:(length(Rt))
-%     if norm(Rt(i).t)>=2000
-%         Rt(i).t=Rt(i).t/norm(Rt(i).t)*1300;
-%     end
-% end
 
 % [Odometry,Z]=trajectory(Rt);     %计算轨迹
 mileage=zeros(1,length(Rt));
@@ -164,35 +154,20 @@ landmarkPoints = landmarkPoints(:,1:landmarkNum);
 
 %% show GPS_trajectory
 if(datanum == 1)
-    load('t_true.mat');
     P_true = [Odometry(2,:);Odometry(1,:)];
-    L_true = [landmarkPoints(2,:);landmarkPoints(1,:)];
-    T_true = [trajectory(3,:);trajectory(1,:)];
 elseif(datanum == 2)
-    load('t1_true.mat');
-    load('R1_correct.mat')
-    P_true = R1_correct*[Odometry(2,:);Odometry(1,:)];
-    L_true = R1_correct*[landmarkPoints(2,:);landmarkPoints(1,:)];
-else
-    load('t2_true.mat');
     load('R2_correct.mat')
     P_true = R2_correct*[Odometry(2,:);Odometry(1,:)];
-    L_true = R2_correct*[landmarkPoints(2,:);landmarkPoints(1,:)];
+else
+    load('R1_correct.mat')
+    P_true = R1_correct*[Odometry(2,:);Odometry(1,:)];
 end
 
 
 %% 画图
 hold on;
 plot(P_true(2,:),P_true(1,:),'o-')
-plot(T_true(2,:),T_true(1,:),'b--')
-plot(L_true(2,:),L_true(1,:),'x')
-% plot(Z(1,:),Z(2,:),'o-');
-% h1=plot(Ptrajectory(1,:),Ptrajectory(2,:));
-% plot(Z(1,:),Z(2,:),'bo');
-% for i=1:length(Z)
-%     plot([Ptrajectory(1,i) Z(1,i)],[Ptrajectory(2,i) Z(2,i)],'r');      %绘制相机姿态
-% end
-% hold off;
+
 title('trajectory');
 xlabel('x(mm)');
 ylabel('z(mm)');
@@ -203,4 +178,4 @@ hold on;
 
 h2=plot(t_true(2,:),t_true(1,:),'r','linewidth',2);
 hold off;
-legend('视觉里程计恢复图像','地标','GPS数据')
+legend('视觉里程计恢复图像','GPS数据')

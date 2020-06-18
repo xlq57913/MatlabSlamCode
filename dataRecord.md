@@ -23,3 +23,23 @@
 ## 1250 Points top 45
 
 ![image-20200616220040977](https://tva1.sinaimg.cn/large/007S8ZIlgy1gfui98niydj30v40ncgmu.jpg)
+
+
+
+## dataset 3 1250 Points top 50 10 6
+
+![image-20200618144139730](https://tva1.sinaimg.cn/large/007S8ZIlgy1gfwfsrzx2kj30v40ncwiy.jpg)
+
+
+
+## dataset 2 1250 Points top 50 14 10 6
+
+![image-20200618154316947](https://tva1.sinaimg.cn/large/007S8ZIlgy1gfwhk93qpbj30v40ncafl.jpg)
+
+
+
+## dataset 1 1250 Points top 50 14 10 6
+
+
+
+![image-20200618155400436](https://tva1.sinaimg.cn/large/007S8ZIlgy1gfwhvnr8lxj30v40ncwit.jpg)
