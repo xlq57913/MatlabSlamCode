@@ -3,7 +3,7 @@ function lmk = makeLandMark(GlobalPoint,landmarks)
     Mapkeys = keys(landmarks);
     m = length(Mapkeys);
     lmk = zeros(4,n);
-    TOL = 1.5e3;
+    TOL = 1.2e3;
     num = 0;
     savenum = 0;
     for a = 1:n
@@ -16,12 +16,12 @@ function lmk = makeLandMark(GlobalPoint,landmarks)
                 landmark.count = landmark.count + 1;
                 landmarks(key) = landmark;
                 fprintf('match! \n');
-                if(landmark.count > 5)
+                if(landmark.count > 3)
                     num = num+1;
                     lmk(1:2,num) = p(1:2);
                     lmk(3:4,num) = landmark.point(1:2);
                 end
-            elseif(norm(landmark.point-p)<TOL*2)
+            elseif(norm(landmark.point-p)<TOL*3)
                 flag = false;
                 break;
             end

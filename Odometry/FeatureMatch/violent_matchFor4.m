@@ -5,7 +5,7 @@ function k=violent_matchFor4(d1,d2,d3)
         t=1;
     end
     if(t<4)
-        t = 8*t;
+        t = 10*t;
     else
         t = 6*t;
     end

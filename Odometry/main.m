@@ -25,13 +25,17 @@ load('timestamps.mat');
 % global landmarks;
 landmarks = containers.Map;
 
-Odometry = zeros(3,1);
+% number of image to read
+framenum = 50;
 
-for picnum=1:140      %读取数据，逐帧处理
+Odometry = zeros(3,framenum+1);
+trajectory = zeros(3,framenum+1);
+
+for picnum=1:framenum      %读取数据，逐帧处理
 %% feature matching
     [Image1_l,Image1_r,Image2_l,Image2_r] = ReadPicture(picnum,datanum);
     [m1_l,m2_l,m1_r,m2_r]=FeatureMatch(Image1_l,Image1_r,Image2_l,Image2_r);
-    [num,~]=size(m1_l)
+    [num,~]=size(m1_l);
     Point1_L = m1_l;
     Point1_R = m1_r;
     Point2_L = m2_l;
@@ -40,6 +44,29 @@ for picnum=1:140      %读取数据，逐帧处理
 %% calculate 3D coordinate
     Point3ddepth_1 = triangulate(Point1_L, Point1_R, P_L',P_R')*1000;     
     Point3ddepth_2 = triangulate(Point2_L, Point2_R, P_L',P_R')*1000;
+
+    % remove bad points
+    Err = abs(Point3ddepth_1-Point3ddepth_2);
+    avgDis1 = sum(Err)/num * 2;
+    
+    discrad = 0;
+    for i = 1:num
+        if(i==num-discrad)
+            break;
+        end
+        if(Err(i,1)>avgDis1(1) || Err(i,2)>avgDis1(2) || Err(i,3)>avgDis1(3))
+            Point3ddepth_1(i-discrad,:) = [];
+            Point3ddepth_2(i-discrad,:) = [];
+            Point1_L(i-discrad,:) = [];
+            Point1_R(i-discrad,:) = [];
+            Point2_L(i-discrad,:) = [];
+            Point2_R(i-discrad,:) = [];
+            discrad = discrad+1;
+        end
+    end
+    
+    num = num-discrad
+
 %  %% data selection
 %     length=length(Point1_L);
 %     Point1_L(fix(length/3)*3+1:end,:)=[];
@@ -64,15 +91,15 @@ for picnum=1:140      %读取数据，逐帧处理
     [R1,t1,Point2_3D_epnp,~] = efficient_pnp_gauss(Point1_3D_hom, Point2_2D_hom,P_L(1:3,1:3));
     % [R1,t1,Point2_3D_epnp,~] = efficient_pnp(Point1_3D_hom, Point2_2D_hom,P_L(1:3,1:3));
     [R0,t0]=ICP(Point3ddepth_1,Point2_3D_epnp);
-    Rt.R=R0;
-    Rt.t=t0;
-    if norm(Rt.t)>=2000
-        Rt.t=Rt.t/norm(Rt.t)*1300;
+    Rt(picnum).R=R0;
+    Rt(picnum).t=t0;
+    if norm(Rt(picnum).t)>=2000
+        Rt(picnum).t=Rt(picnum).t/norm(Rt(picnum).t)*1300;
     end
 
     %% update Odometry
-    % Odometry(:,picnum+1) = updateOdometry(Rt,Odometry,picnum);
-    Odometry(:,picnum+1) = Rt.R*Odometry(:,picnum)+Rt.t;
+    [Odometry(:,picnum+1),trajectory(:,picnum+1)] = updateOdometry(Rt,Odometry,trajectory,picnum);
+    % Odometry(:,picnum+1) = Rt.R*Odometry(:,picnum)+Rt.t;
 
     %% get 3D coordinate of feature points
     GlobalPoint = (Point3ddepth_1+Point3ddepth_2)/2;
@@ -83,10 +110,23 @@ for picnum=1:140      %读取数据，逐帧处理
     if(~isempty(lmk))
         vP = lmk(3:4,:) - lmk(1:2,:);
         [~,n] = size(vP);
-        Odometry([1,3],picnum+1) = Odometry([1,3],picnum+1) + sum(vP')'/n;
+
+        % ugly wey
+        if(n~=1)
+            offset = sum(vP')'/n
+        else
+            offset = vP
+        end
+        % if(norm(offset)>norm(Odometry([1,3],picnum+1)-Odometry([1,3],picnum))*0.3)
+        %     offset = offset / norm(offset) * norm(Odometry([1,3],picnum+1)-Odometry([1,3],picnum))*0.3;
+        % end
+        Odometry([1,3],picnum+1) = Odometry([1,3],picnum+1) + offset;
+
+        %elegant way
+        % [xV,q,r] = EFK2(vP,Odometry,picnum);
     end
     
-    % [xV,q,r] = EFK2(vP,Odometry,picnum);
+    
 
     fprintf('%d has finished.\n',picnum);  
 end
@@ -127,6 +167,7 @@ if(datanum == 1)
     load('t_true.mat');
     P_true = [Odometry(2,:);Odometry(1,:)];
     L_true = [landmarkPoints(2,:);landmarkPoints(1,:)];
+    T_true = [trajectory(3,:);trajectory(1,:)];
 elseif(datanum == 2)
     load('t1_true.mat');
     load('R1_correct.mat')
@@ -143,6 +184,7 @@ end
 %% 画图
 hold on;
 plot(P_true(2,:),P_true(1,:),'o-')
+plot(T_true(2,:),T_true(1,:),'b--')
 plot(L_true(2,:),L_true(1,:),'x')
 % plot(Z(1,:),Z(2,:),'o-');
 % h1=plot(Ptrajectory(1,:),Ptrajectory(2,:));
@@ -161,4 +203,4 @@ hold on;
 
 h2=plot(t_true(2,:),t_true(1,:),'r','linewidth',2);
 hold off;
-legend('视觉里程计恢复图像','GPS数据')
+legend('视觉里程计恢复图像','地标','GPS数据')
