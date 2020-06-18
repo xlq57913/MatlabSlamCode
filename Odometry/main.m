@@ -11,10 +11,10 @@ addpath('featureMatching');
 addpath('KalmanFilter');
 
 % number of dataset
-datanum = 2;
+datanum = 1;
 
 % number of image to read
-framenum = 440;
+framenum = 140;
 
 %% 加载相机参数
 if(datanum==1)
@@ -80,8 +80,8 @@ for picnum=1:framenum      %读取数据，逐帧处理
     Point1_3D_hom = [Point3ddepth_1,ones(length(Point3ddepth_1),1)];
     Point2_2D_hom = [Point2_L,ones(length(Point2_L),1)];
 %% pnp问题 -EPnP算法
-    [R1,t1,Point2_3D_epnp,~] = efficient_pnp_gauss(Point1_3D_hom, Point2_2D_hom,P_L(1:3,1:3));
-    % [R1,t1,Point2_3D_epnp,~] = efficient_pnp(Point1_3D_hom, Point2_2D_hom,P_L(1:3,1:3));
+    % [R1,t1,Point2_3D_epnp,~] = efficient_pnp_gauss(Point1_3D_hom, Point2_2D_hom,P_L(1:3,1:3));
+    [R1,t1,Point2_3D_epnp,~] = efficient_pnp(Point1_3D_hom, Point2_2D_hom,P_L(1:3,1:3));
     [R0,t0]=ICP(Point3ddepth_1,Point2_3D_epnp);
     Rt(picnum).R=R0;
     Rt(picnum).t=t0;
