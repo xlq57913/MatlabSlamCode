@@ -63,4 +63,4 @@ To avoid unnecessary files in this repo, .mat files and all images are ignored, 
 
 ## About Collaborators
 
-Work by hwk, qk, xjx, zzh in SJTU Matlab Course: **(2019-2020-2)-ME391-1-Matlab及其工程应用**
+With the hard work of hwk, qk, xjx, zzh in SJTU Matlab Course: **(2019-2020-2)-ME391-1-Matlab及其工程应用**
