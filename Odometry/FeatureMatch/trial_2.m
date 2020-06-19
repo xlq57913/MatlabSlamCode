@@ -2,8 +2,8 @@ clear;
 tic;
 % ��ֵt=38,�������룬����ƥ��
 % ��ֵt�ĵ�����para.m�ĵ�30��
-img1=imread('../LeftCamera/data/0000000000.png');
-img2=imread('../LeftCamera/data/0000000001.png');
+img1=imread('./figure/27.jpg');
+img2=imread('./figure/28.jpg');
 %img2 = imrotate(img2,180);
 [gray_img,F1,F2,dham,matchpoint,A,t1,t2]=para(img1,img2);
 colormap gray;

@@ -11,10 +11,10 @@ addpath('featureMatching');
 addpath('KalmanFilter');
 
 % number of dataset
-datanum = 1;
+datanum = 2;
 
 % number of image to read
-framenum = 140;
+framenum = 440;
 
 %% 加载相机参数
 if(datanum==1)
@@ -39,6 +39,7 @@ landmarks = containers.Map;
 Odometry = zeros(3,framenum+1);
 trajectory = zeros(3,framenum+1);
 loss = zeros(2,framenum+1);
+state = zeros(3,1);
 
 for picnum=1:framenum      %读取数据，逐帧处理
 %% feature matching
@@ -80,8 +81,8 @@ for picnum=1:framenum      %读取数据，逐帧处理
     Point1_3D_hom = [Point3ddepth_1,ones(length(Point3ddepth_1),1)];
     Point2_2D_hom = [Point2_L,ones(length(Point2_L),1)];
 %% pnp问题 -EPnP算法
-    % [R1,t1,Point2_3D_epnp,~] = efficient_pnp_gauss(Point1_3D_hom, Point2_2D_hom,P_L(1:3,1:3));
-    [R1,t1,Point2_3D_epnp,~] = efficient_pnp(Point1_3D_hom, Point2_2D_hom,P_L(1:3,1:3));
+    [R1,t1,Point2_3D_epnp,~] = efficient_pnp_gauss(Point1_3D_hom, Point2_2D_hom,P_L(1:3,1:3));
+    % [R1,t1,Point2_3D_epnp,~] = efficient_pnp(Point1_3D_hom, Point2_2D_hom,P_L(1:3,1:3));
     [R0,t0]=ICP(Point3ddepth_1,Point2_3D_epnp);
     Rt(picnum).R=R0;
     Rt(picnum).t=t0;
@@ -94,29 +95,30 @@ for picnum=1:framenum      %读取数据，逐帧处理
     % Odometry(:,picnum+1) = Rt.R*Odometry(:,picnum)+Rt.t;
 
     %% get 3D coordinate of feature points
-    GlobalPoint = (Point3ddepth_1+Point3ddepth_2)/2;
+    % GlobalPoint = (Point3ddepth_1+Point3ddepth_2)/2;
+    GlobalPoint = Point2_3D_epnp;
     GlobalPoint(:,1:2) = transpose((GlobalPoint(:,1:2)') + Odometry([1,3],picnum+1));
 
     %% update landmarks
-%     lmk = makeLandMark(GlobalPoint,landmarks);
-%     if(~isempty(lmk))
-%         vP = lmk(3:4,:) - lmk(1:2,:);
-%         [~,n] = size(vP)
-% 
-%         % ugly wey
-%         if(n~=1)
-%             offset = sum(vP')'/n
-%         else
-%             offset = vP
-%         end
-%         if(abs(offset(1))>norm(Odometry([1,3],picnum+1)-Odometry([1,3],picnum))*0.3)
-%             offset = offset / norm(offset) * norm(Odometry([1,3],picnum+1)-Odometry([1,3],picnum))*0.3;
-%         end
-%         Odometry([1,3],picnum+1) = Odometry([1,3],picnum+1) + offset;
-% 
-%         %elegant way
-%         % [xV,q,r] = EFK2(vP,Odometry,picnum);
-%     end
+    lmk = makeLandMark(GlobalPoint,landmarks);
+    if(~isempty(lmk))
+        vP = lmk(3:4,:) - lmk(1:2,:);
+        [~,n] = size(vP)
+
+        % ugly wey
+        if(n~=1)
+            offset = sum(vP')'/n
+        else
+            offset = vP
+        end
+        if(abs(offset(1))>norm(Odometry([1,3],picnum+1)-Odometry([1,3],picnum))*0.3)
+            offset = offset / norm(offset) * norm(Odometry([1,3],picnum+1)-Odometry([1,3],picnum))*0.3;
+        end
+        Odometry([1,3],picnum+1) = Odometry([1,3],picnum+1) + offset;
+
+        %elegant way
+        % [xV,q,r] = EFK2(vP,Odometry,picnum);
+    end
 
     fprintf('%d has finished.\n',picnum);  
     if(datanum==1)

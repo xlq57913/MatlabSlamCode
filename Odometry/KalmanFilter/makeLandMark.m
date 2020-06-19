@@ -16,12 +16,14 @@ function lmk = makeLandMark(GlobalPoint,landmarks)
                 landmark.count = landmark.count + 1;
                 landmarks(key) = landmark;
                 fprintf('match! \n');
-                if(landmark.count > 3)
+                if(landmark.count > 2)
                     num = num+1;
                     lmk(1:2,num) = p(1:2);
                     lmk(3:4,num) = landmark.point(1:2);
                 end
-            elseif(norm(landmark.point-p)<TOL*3)
+                flag = false;
+                break;
+            elseif(norm(landmark.point-p)<TOL*2)
                 flag = false;
                 break;
             end

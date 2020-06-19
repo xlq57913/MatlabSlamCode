@@ -58,3 +58,9 @@ the slamtb is downloaded from github: [joansola](https://github.com/joansola/sla
 ## About Ignore
 
 To avoid unnecessary files in this repo, .mat files and all images are ignored, everything in figure folder are ignored, place images as you want.
+
+---
+
+## About Collaborators
+
+Work by hwk, qk, xjx, zzh in SJTU Matlab Course: **(2019-2020-2)-ME391-1-Matlab及其工程应用**
